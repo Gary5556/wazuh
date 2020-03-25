@@ -573,6 +573,27 @@ char *gen_audit_path(char *cwd, char *path0, char *path1) {
     return gen_path;
 }
 
+char *get_name_parent_proces(char *ppid) {
+
+    char *ppname = NULL;
+    char *slink = NULL;
+    int tam_slink = strlen(ppid) + 11;
+    int tam_ppname = 0;
+
+    os_malloc(OS_FLSIZE, ppname);
+    os_malloc(tam_slink, slink);
+
+    snprintf(slink, tam_slink, "/proc/%s/exe", ppid);
+
+    if(tam_ppname = readlink(slink, ppname, OS_FLSIZE), tam_ppname < 0) {
+        merror("Failure to obtain the name of the process: '%s'. Error: %s", ppid, strerror(errno));
+    }
+
+    ppname[tam_ppname] = '\0';
+    os_free(slink);
+
+    return ppname;
+}
 
 void audit_parse(char *buffer) {
     char *psuccess;
@@ -720,9 +741,10 @@ void audit_parse(char *buffer) {
             // ppid
             if(regexec(&regexCompiled_ppid, buffer, 2, match, 0) == 0) {
                 match_size = match[1].rm_eo - match[1].rm_so;
-                char *ppid = NULL;
+                char *ppid = NULL, *ppname = NULL;
                 os_malloc(match_size + 1, ppid);
                 snprintf (ppid, match_size +1, "%.*s", match_size, buffer + match[1].rm_so);
+                w_evt->pprocess_name = get_name_parent_proces(ppid);
                 w_evt->ppid = atoi(ppid);
                 free(ppid);
             }

@@ -136,6 +136,7 @@ typedef struct whodata_evt {
     char *effective_name;  // Linux
     char *inode;  // Linux
     char *dev;  // Linux
+    char *pprocess_name; // Linux
     int ppid;  // Linux
     char *cwd; // Linux
 #ifndef WIN32
